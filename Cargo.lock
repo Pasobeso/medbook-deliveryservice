@@ -1616,6 +1616,7 @@ dependencies = [
 [[package]]
 name = "medbook-core"
 version = "0.1.0"
+source = "git+https://github.com/Pasobeso/medbook-core.git#dae09453c14dde469fad7ed7a430ea6641e1f9bd"
 dependencies = [
  "anyhow",
  "axum",
@@ -1673,6 +1674,7 @@ dependencies = [
 [[package]]
 name = "medbook-events"
 version = "0.1.0"
+source = "git+https://github.com/Pasobeso/medbook-events.git#088517b725bcf55a4546023d77aa97a3408615bc"
 dependencies = [
  "serde",
  "serde_json",
