@@ -1688,7 +1688,7 @@ dependencies = [
 [[package]]
 name = "medbook-core"
 version = "0.1.0"
-source = "git+https://github.com/Pasobeso/medbook-core.git#747a215690425b76171ef1063b083db96dfc5565"
+source = "git+https://github.com/Pasobeso/medbook-core.git#db168cf0a9121b52e73b6520a4372c6a8081bc37"
 dependencies = [
  "anyhow",
  "axum",
@@ -1712,6 +1712,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "utoipa",
+ "utoipa-swagger-ui",
  "uuid",
 ]
 
@@ -2275,7 +2276,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

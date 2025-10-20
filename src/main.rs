@@ -3,7 +3,7 @@ use axum::Router;
 use diesel_migrations::{EmbeddedMigrations, embed_migrations};
 use medbook_core::{
     bootstrap::{self, bootstrap},
-    config, db,
+    config, db, swagger,
 };
 use medbook_deliveryservice::{consumers, routes};
 
@@ -19,12 +19,8 @@ async fn main() -> Result<()> {
         .merge(routes::delivery_addresses::routes_with_openapi())
         .merge(routes::patients::delivery_addresses::routes_with_openapi());
 
-    let swagger_router = utoipa_swagger_ui::SwaggerUi::new("/swagger-ui").url(
-        "/api-docs/openapi.json",
-        openapi_routes.get_openapi().clone(),
-    );
-
-    let app = Router::new().merge(openapi_routes).merge(swagger_router);
+    let swagger_ui = swagger::create_swagger_ui(openapi_routes.get_openapi().clone())?;
+    let app = Router::new().merge(openapi_routes).merge(swagger_ui);
 
     tracing::info!("Running migrations...");
     let config = config::load()?;
