@@ -16,6 +16,8 @@ use medbook_core::{
 };
 use medbook_events::DeliverySuccessEvent;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
 use uuid::Uuid;
 
 use crate::{
@@ -24,6 +26,7 @@ use crate::{
 };
 
 /// Defines all patient-facing product routes (CRUD operations + authorization).
+#[deprecated]
 pub fn routes() -> Router<AppState> {
     Router::new().nest(
         "/deliveries",
@@ -34,12 +37,35 @@ pub fn routes() -> Router<AppState> {
     )
 }
 
-#[derive(Serialize)]
+/// Defines routes with OpenAPI specs. Should be used over `routes()` where possible.
+pub fn routes_with_openapi() -> OpenApiRouter<AppState> {
+    utoipa_axum::router::OpenApiRouter::new().nest(
+        "/deliveries",
+        OpenApiRouter::new()
+            .routes(utoipa_axum::routes!(get_delivery))
+            .routes(utoipa_axum::routes!(get_deliveries))
+            .routes(utoipa_axum::routes!(update_delivery_state)),
+    )
+}
+
+#[derive(Serialize, ToSchema)]
 struct GetDeliveryRes {
     delivery: DeliveryEntity,
     delivery_logs: Vec<DeliveryLogEntity>,
 }
 
+/// Fetch a specific delivery and its logs.
+#[utoipa::path(
+    get,
+    path = "/{id}",
+    tags = ["Deliveries"],
+    params(
+        ("id" = Uuid, Path, description = "Delivery ID to fetch")
+    ),
+    responses(
+        (status = 200, description = "Fetched delivery successfully", body = StdResponse<GetDeliveryRes, String>)
+    )
+)]
 async fn get_delivery(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
@@ -72,6 +98,15 @@ async fn get_delivery(
     })
 }
 
+/// Fetch all deliveries in the system.
+#[utoipa::path(
+    get,
+    path = "/",
+    tags = ["Deliveries"],
+    responses(
+        (status = 200, description = "List all deliveries", body = StdResponse<Vec<DeliveryEntity>, String>)
+    )
+)]
 async fn get_deliveries(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let conn = &mut state
         .db_pool
@@ -90,18 +125,31 @@ async fn get_deliveries(State(state): State<AppState>) -> Result<impl IntoRespon
     })
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct UpdateDeliveryStateReq {
     status: String,
     description: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct UpdateDeliveryStateRes {
     updated_delivery: DeliveryEntity,
     delivery_log: DeliveryLogEntity,
 }
 
+/// Update a delivery’s current status.
+#[utoipa::path(
+    patch,
+    path = "/{id}/status",
+    tags = ["Deliveries"],
+    params(
+        ("id" = Uuid, Path, description = "Delivery ID to update")
+    ),
+    request_body = UpdateDeliveryStateReq,
+    responses(
+        (status = 200, description = "Updated delivery successfully", body = StdResponse<UpdateDeliveryStateRes, String>)
+    )
+)]
 async fn update_delivery_state(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,

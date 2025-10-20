@@ -14,6 +14,8 @@ use medbook_core::{
     middleware,
 };
 use serde::Deserialize;
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
 
 use crate::{
     models::{CreateDeliveryAddressEntity, DeliveryAddressEntity},
@@ -21,6 +23,7 @@ use crate::{
 };
 
 /// Defines all patient-facing product routes (CRUD operations + authorization).
+#[deprecated]
 pub fn routes() -> Router<AppState> {
     Router::new().nest(
         "/patients/delivery-addresses",
@@ -38,6 +41,31 @@ pub fn routes() -> Router<AppState> {
     )
 }
 
+/// Defines routes with OpenAPI specs. Should be used over `routes()` where possible.
+pub fn routes_with_openapi() -> OpenApiRouter<AppState> {
+    utoipa_axum::router::OpenApiRouter::new().nest(
+        "/patients/deliveries",
+        OpenApiRouter::new()
+            .routes(utoipa_axum::routes!(get_my_delivery_addresses))
+            .routes(utoipa_axum::routes!(create_delivery_address))
+            .routes(utoipa_axum::routes!(update_delivery_address))
+            .routes(utoipa_axum::routes!(delete_delivery_address))
+            .route_layer(axum::middleware::from_fn(
+                middleware::patients_authorization,
+            )),
+    )
+}
+
+/// Fetch all delivery addresses belonging to the authenticated patient.
+#[utoipa::path(
+    get,
+    path = "/my-delivery-addresses",
+    tags = ["Delivery Addresses"],
+    security(("bearerAuth" = [])),
+    responses(
+        (status = 200, description = "Fetched patient's delivery addresses successfully", body = StdResponse<Vec<DeliveryAddressEntity>, String>)
+    )
+)]
 async fn get_my_delivery_addresses(
     State(state): State<AppState>,
     Extension(patient_id): Extension<i32>,
@@ -60,7 +88,7 @@ async fn get_my_delivery_addresses(
     })
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct CreateDeliveryAddressReq {
     recipient_name: String,
     phone_number: String,
@@ -71,6 +99,17 @@ struct CreateDeliveryAddressReq {
     country: String,
 }
 
+/// Create a new delivery address for the authenticated patient.
+#[utoipa::path(
+    post,
+    path = "/",
+    tags = ["Delivery Addresses"],
+    security(("bearerAuth" = [])),
+    request_body = CreateDeliveryAddressReq,
+    responses(
+        (status = 200, description = "Created delivery address successfully", body = StdResponse<DeliveryAddressEntity, String>)
+    )
+)]
 async fn create_delivery_address(
     State(state): State<AppState>,
     Extension(patient_id): Extension<i32>,
@@ -105,6 +144,20 @@ async fn create_delivery_address(
     })
 }
 
+/// Update an existing delivery address belonging to the authenticated patient.
+#[utoipa::path(
+    patch,
+    path = "/{id}",
+    tags = ["Delivery Addresses"],
+    security(("bearerAuth" = [])),
+    params(
+        ("id" = i32, Path, description = "Delivery address ID to update")
+    ),
+    request_body = CreateDeliveryAddressReq,
+    responses(
+        (status = 200, description = "Updated delivery address successfully", body = StdResponse<DeliveryAddressEntity, String>)
+    )
+)]
 async fn update_delivery_address(
     Path(id): Path<i32>,
     State(state): State<AppState>,
@@ -144,6 +197,19 @@ async fn update_delivery_address(
     })
 }
 
+/// Delete a delivery address belonging to the authenticated patient.
+#[utoipa::path(
+    delete,
+    path = "/{id}",
+    tags = ["Delivery Addresses"],
+    security(("bearerAuth" = [])),
+    params(
+        ("id" = i32, Path, description = "Delivery address ID to delete")
+    ),
+    responses(
+        (status = 200, description = "Deleted delivery address successfully", body = StdResponse<DeliveryAddressEntity, String>)
+    )
+)]
 async fn delete_delivery_address(
     Path(id): Path<i32>,
     State(state): State<AppState>,

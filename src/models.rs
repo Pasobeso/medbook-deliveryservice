@@ -5,9 +5,10 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone, ToSchema)]
 #[diesel(table_name = crate::schema::delivery_addresses)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeliveryAddressEntity {
@@ -25,7 +26,7 @@ pub struct DeliveryAddressEntity {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone, ToSchema)]
 #[diesel(table_name = crate::schema::deliveries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeliveryEntity {
@@ -61,7 +62,7 @@ pub struct CreateDeliveryAddressEntity {
     pub is_default: bool,
 }
 
-#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, ToSchema)]
 #[diesel(table_name = crate::schema::delivery_logs)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeliveryLogEntity {

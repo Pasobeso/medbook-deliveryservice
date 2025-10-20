@@ -15,10 +15,16 @@ async fn main() -> Result<()> {
     bootstrap::init_tracing();
     bootstrap::init_env();
 
-    let app = Router::new()
-        .merge(routes::deliveries::routes())
-        .merge(routes::delivery_addresses::routes())
-        .merge(routes::patients::delivery_addresses::routes());
+    let openapi_routes = routes::deliveries::routes_with_openapi()
+        .merge(routes::delivery_addresses::routes_with_openapi())
+        .merge(routes::patients::delivery_addresses::routes_with_openapi());
+
+    let swagger_router = utoipa_swagger_ui::SwaggerUi::new("/swagger-ui").url(
+        "/api-docs/openapi.json",
+        openapi_routes.get_openapi().clone(),
+    );
+
+    let app = Router::new().merge(openapi_routes).merge(swagger_router);
 
     tracing::info!("Running migrations...");
     let config = config::load()?;
