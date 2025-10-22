@@ -22,7 +22,7 @@ EXECUTE FUNCTION diesel_set_updated_at();
 
 CREATE TABLE "deliveries" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    delivery_address JSONB NOT NULL,
+    delivery_address JSONB,
     order_id INT NOT NULL,
     status VARCHAR(64) NOT NULL DEFAULT 'PREPARING', -- PREPARING, EN_ROUTE, DELIVERED,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

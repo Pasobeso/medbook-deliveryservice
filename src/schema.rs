@@ -3,7 +3,7 @@
 diesel::table! {
     deliveries (id) {
         id -> Uuid,
-        delivery_address -> Jsonb,
+        delivery_address -> Nullable<Jsonb>,
         order_id -> Int4,
         #[max_length = 64]
         status -> Varchar,

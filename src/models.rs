@@ -31,7 +31,7 @@ pub struct DeliveryAddressEntity {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeliveryEntity {
     pub id: Uuid,
-    pub delivery_address: Value,
+    pub delivery_address: Option<Value>,
     pub order_id: i32,
     pub status: String,
     pub created_at: DateTime<Utc>,
@@ -42,7 +42,7 @@ pub struct DeliveryEntity {
 #[diesel(table_name = crate::schema::deliveries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CreateDeliveryEntity {
-    pub delivery_address: Value,
+    pub delivery_address: Option<Value>,
     pub order_id: i32,
     pub status: String,
 }
